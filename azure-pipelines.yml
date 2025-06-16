@@ -14,7 +14,7 @@ stages:
     jobs:
       - job: SFBuild
         steps:
-          - script: echo ""SFBuild is running"
+          - script: echo "SFBuild is running"
             displayName: Single Line Script
           - script: |
               echo "Multiple Line 1"
