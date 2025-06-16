@@ -35,17 +35,19 @@ stages:
             displayName: Install Required Plugins
       - job: SFDeploy
         steps:
-          - script: echo ""SFBuild is running"
+          - script: echo "SFBuild is running"
             displayName: Single Line Script
           - script: |
               echo "Multiple Line 1"
               echo "Multiple Line 2" 
+            displayName: MultipleLine Script
   - stage: SFTest
     jobs:
       - job: SFBuild
         steps:
-          - script: echo ""SFBuild is running"
+          - script: echo "SFBuild is running"
             displayName: Single Line Script
           - script: |
               echo "Multiple Line 1"
               echo "Multiple Line 2"
+            displayName: MultipleLine Script
