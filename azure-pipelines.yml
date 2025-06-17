@@ -31,6 +31,8 @@ stages:
               echo $(SF_CLIENT_ID)
               echo $(SF_ALIAS)
               echo $(SF_INSTANCE_URL)
+              echo $(System.DefaultWorkingDirectory)
+              echo $(Build.ArtifactStagingDirectory)
             displayName: MultipleLine Script
 
   - stage: SFDeployAndValidate
@@ -50,7 +52,7 @@ stages:
             displayName: Install Required Plugins
           # Download the Secure File
           - task: DownloadSecureFile@1
-            displayName: commonSecureFile
+            name: commonSecureFile
             inputs:
               secureFile: 'server-uat.key' # Name of the secure file in Azure DevOps
           - script: |
@@ -59,6 +61,31 @@ stages:
           - script: |
               sf apex run test --target-org $(SF_ALIAS) --test-level RunLocalTests --tests $(TEST_CLASS_LEVEL) --code-coverage --result-format human -d ./ --wait 10
             displayName: Run Local Tests
+          # Salesforce Code Analyzer
+          - script: |
+               mkdir scanner_reports
+               sf scanner run --format html --target "force-app/main/default" --engine eslint,eslint-lwc,eslint-typescript,pmd,retire-js,cpd --category Design,Best Practices,Code Style,Performance,Security --outfile scanner_reports/scanner_reports.html
+            displayName: Run Salesforce Code Analyzer
+          # Upload as an artifacts
+
+          # 1 Build Artifacts
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'My First Pipeline'
+              publishLocation: 'Container'
+              StoreAsTar: true
+            displayName: Publish Build Artifact
+          # 2 Pipeline Artifacts
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/scanner_reports'
+              artifact: 'SF_CLI_REPORTS'
+              publishLocation: 'pipeline'
+            displayName: Publish SF CLI Scanner Reports
+          - script: |
+              sf project deploy start --target-org $(SF_ALIAS) --source-dir force-app --dry-run
+            displayName: Validate Deployment
       - job: SFDeploy
         steps:
           - script: echo "SFBuild is running"
