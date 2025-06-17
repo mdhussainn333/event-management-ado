@@ -4,12 +4,21 @@
 # https://aka.ms/yaml
 
 trigger: # Equivalent to 'trigger: - main' in YAML
-- feature/azure-pipelines
-- feature/*
+  branches:
+    include:
+     - feature/*
+  paths:
+    include:
+      - force-app/*
 
 # pull request trigger
-pr: none 
-
+pr:
+  branches:
+    include:
+      - force-app/*
+  paths:
+    include:
+      - force-app/*
 
 variables:
 - group: uat
