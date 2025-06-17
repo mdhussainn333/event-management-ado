@@ -250,7 +250,7 @@ stages:
                else
                  echo "---- No changes to validate ----"
                fi
-            displayName: Validate Pre-Destructive Changes in Salesforce
+            displayName: Validate Pre-Destructive Changes in Salesforce 
           # 4 Validate the Deployment
           - script: |
               sf project deploy start --target-org $(SF_ALIAS) --source-dir force-app --dry-run
