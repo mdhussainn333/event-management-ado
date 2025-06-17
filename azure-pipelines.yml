@@ -59,7 +59,7 @@ stages:
               sf org login jwt --jwt-key-file $(commonSecureFile.secureFilePath) --username $(SF_USER_NAME) --client-id $(SF_CLIENT_ID) --set-default --alias $(SF_ALIAS) --instance-url $(SF_INSTANCE_URL)
             displayName: Authenticate with salesforce
           - script: |
-              sf apex run test --target-org $(SF_ALIAS) --test-level RunLocalTests --tests $(TEST_CLASS_LEVEL) --code-coverage --result-format human -d ./ --wait 10
+              sf apex run test --target-org $(SF_ALIAS) --test-level RunLocalTests --code-coverage --result-format human -d ./ --wait 10
             displayName: Run Local Tests
           # Salesforce Code Analyzer
           - script: |
