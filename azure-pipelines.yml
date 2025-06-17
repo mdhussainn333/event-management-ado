@@ -15,9 +15,150 @@ trigger: # Equivalent to 'trigger: - main' in YAML
 pr:
   branches:
     include:
+      - uat
+  paths:
+    include:# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: # Equivalent to 'trigger: - main' in YAML
+  branches:
+    include:
+     - feature/*
+  paths:
+    include:
+      - force-app/*
+
+# pull request trigger
+pr:
+  branches:
+    include:
       - force-app/*
   paths:
     include:
+      - force-app/*
+
+variables:
+- group: uat
+- name: TEST_CLASS_LEVEL
+  value: AccountTriggerTest
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: SFBuild
+    jobs:
+      - job: SFBuild
+        steps:
+          - script: echo "SFBuild is running"
+            displayName: Single Line Script
+          - script: |
+              echo $(SF_USER_NAME)
+              echo $(SF_CLIENT_ID)
+              echo $(SF_ALIAS)
+              echo $(SF_INSTANCE_URL)
+              echo $(System.DefaultWorkingDirectory)
+              echo $(Build.ArtifactStagingDirectory)
+            displayName: MultipleLine Script
+
+  - stage: SFDeployAndValidate
+    jobs:
+      - job: SFValidate
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            displayName: Checkout to Correct Commit
+          - script: npm install -g @salesforce/cli
+            displayName: Install Salesforce CLI
+          - script: sf --version
+            displayName: Verify SF-CLI Installation
+          - script: |
+              echo 'y' | sf plugins install sfdx-git-delta
+              sf plugins install @salesforce/sfdx-scanner
+            displayName: Install Required Plugins
+          # Download the Secure File
+          - task: DownloadSecureFile@1
+            name: commonSecureFile
+            inputs:
+              secureFile: 'server-uat.key' # Name of the secure file in Azure DevOps
+          - script: |
+              sf org login jwt --jwt-key-file $(commonSecureFile.secureFilePath) --username $(SF_USER_NAME) --client-id $(SF_CLIENT_ID) --set-default --alias $(SF_ALIAS) --instance-url $(SF_INSTANCE_URL)
+            displayName: Authenticate with salesforce
+          - script: |
+              sf apex run test --target-org $(SF_ALIAS) --test-level RunLocalTests --code-coverage --result-format human -d ./ --wait 10
+            displayName: Run Local Tests
+          # Salesforce Code Analyzer
+          - script: |
+               mkdir scanner_reports
+               sf scanner run --format html --target "force-app/main/default" --engine eslint,eslint-lwc,eslint-typescript,pmd,retire-js,cpd --category Design,Best Practices,Code Style,Performance,Security --outfile scanner_reports/scanner_reports.html
+            displayName: Run Salesforce Code Analyzer
+          # Upload as an artifacts
+
+          # 1 Build Artifacts
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'My First Pipeline'
+              publishLocation: 'Container'
+              StoreAsTar: true
+            displayName: Publish Build Artifact
+          # 2 Pipeline Artifacts
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/scanner_reports'
+              artifact: 'SF_CLI_REPORTS'
+              publishLocation: 'pipeline'
+            displayName: Publish SF CLI Scanner Reports   
+          # 3 Generate the Delta Deployment
+          - script: |
+              mkdir delta
+              # https://github.com/scolladon/sfdx-git-delta
+              sf sgd source delta --to "HEAD" --from "HEAD~1" --output-dir ./delta --generate-delta --ignore-whitespace --ignore-file .sgdignore
+              cat ./delta/package/package.xml
+              cat ./delta/destructiveChanges/destructiveChanges.xml
+              ls -l ./delta
+            displayName: Generate Delta Deployment
+
+          - script: |
+               if grep -q '<types>' delta/destructiveChanges/destructiveChanges.xml ; then
+                 echo "---- Validate Pre-Destructive Changes in Salesforce ----"
+                 sf project deploy start --target-org $(SF_ALIAS) --pre-destructive-changes delta/destructiveChanges/destructiveChanges.xml --manifest delta/destructiveChanges/package.xml --dry-run --wait 15
+               else
+                 echo "---- No changes to validate ----"
+               fi
+            displayName: Validate Pre-Destructive Changes in Salesforce
+          # 4 Validate the Deployment
+          - script: |
+              sf project deploy start --target-org $(SF_ALIAS) --source-dir force-app --dry-run
+            displayName: Validate Deployment
+          - script: |
+              if grep -q '<types>' destructiveChanges/postDestructiveChanges.xml ; then
+                echo "---- Deploy Pre-Destructive Changes in Salesforce ----"
+                sf project deploy start --target-org $(SF_ALIAS) --post-destructive-changes destructiveChanges/postDestructiveChanges.xml --manifest destructiveChanges/package.xml --wait 15
+              else
+                echo "---- No changes to deploy ----"
+              fi
+            displayName: Deploy Post-Destructive Changes in Salesforce
+      - job: SFDeploy
+        steps:
+          - script: echo "SFBuild is running"
+            displayName: Single Line Script
+          - script: |
+              echo "Multiple Line 1"
+              echo "Multiple Line 2" 
+            displayName: MultipleLine Script
+  - stage: SFTest
+    jobs:
+      - job: SFBuild
+        steps:
+          - script: echo "SFBuild is running"
+            displayName: Single Line Script
+          - script: |
+              echo "Multiple Line 1"
+              echo "Multiple Line 2"
+            displayName: MultipleLine Script
       - force-app/*
 
 variables:
