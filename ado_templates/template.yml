@@ -27,7 +27,7 @@ jobs:
       - script: npm install -g @salesforce/cli
         displayName: Install Salesforce CLI
       - script: sf --version
-        displayName: Verify SF-CLI Installation
+        displayName: Verify SF-CLI Installation   
       - script: |
           echo 'y' | sf plugins install sfdx-git-delta
           sf plugins install @salesforce/sfdx-scanner
@@ -51,7 +51,7 @@ jobs:
       # Upload as an artifacts
 
       # 1 Build Artifacts
-      - task: PublishBuildArtifacts@1
+      - task: PublishBuildArtifacts@1   
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'My First Pipeline'
@@ -74,7 +74,7 @@ jobs:
           cat ./delta/destructiveChanges/destructiveChanges.xml
           ls -l ./delta
         displayName: Generate Delta Deployment
-
+      # 4 Validate the Deployment
       - script: |
             if grep -q '<types>' delta/destructiveChanges/destructiveChanges.xml ; then
               echo "---- Validate Pre-Destructive Changes in Salesforce ----"
@@ -83,18 +83,45 @@ jobs:
               echo "---- No changes to validate ----"
             fi
         displayName: Validate Pre-Destructive Changes in Salesforce
-      # 4 Validate the Deployment
+        condition: eq( '${{ parameters.PR_MERGED }}', 'false')
       - script: |
-          sf project deploy start --target-org $(SF_ALIAS) --source-dir force-app --dry-run
-        displayName: Validate Deployment
+          if grep -q '<types>' delta/package/package.xml ; then
+            echo "---- Deploying added and modified metadata ----"
+            sf project deploy start --target-org $(SF_ALIAS) --manifest delta/package/package.xml --dry-run --wait 15
+          else
+            echo "---- No changes to validate ----"
+          fi
+        displayName: Validate the changes
+        condition: eq( '${{ parameters.PR_MERGED }}', 'false')
+      # 4 Deploy the Metadata
       - script: |
-          if grep -q '<types>' destructiveChanges/postDestructiveChanges.xml ; then
-            echo "---- Deploy Pre-Destructive Changes in Salesforce ----"
-            sf project deploy start --target-org $(SF_ALIAS) --post-destructive-changes destructiveChanges/postDestructiveChanges.xml --manifest destructiveChanges/package.xml --wait 15
+            if grep -q '<types>' delta/destructiveChanges/destructiveChanges.xml ; then
+              echo "---- Validate Pre-Destructive Changes in Salesforce ----"
+              sf project deploy start --target-org $(SF_ALIAS) --pre-destructive-changes delta/destructiveChanges/destructiveChanges.xml --manifest delta/destructiveChanges/package.xml --wait 15
+            else
+              echo "---- No Pre-Destructive changes to deploy ----"
+            fi
+        displayName: Deploy Pre-Destructive Changes in Salesforce
+        condition: eq( '${{ parameters.PR_MERGED }}', 'true')
+      - script: |
+          if grep -q '<types>' delta/package/package.xml ; then
+            echo "---- Deploying added and modified metadata ----"
+            sf project deploy start --target-org $(SF_ALIAS) --manifest delta/package/package.xml --wait 15
           else
             echo "---- No changes to deploy ----"
           fi
+        displayName: Deploy the changes
+        condition: eq( '${{ parameters.PR_MERGED }}', 'true')
+      - script: |
+          if grep -q '<types>' destructiveChanges/postDestructiveChanges.xml ; then
+            echo "---- Deploy Post-Destructive Changes in Salesforce ----"
+            sf project deploy start --target-org $(SF_ALIAS) --post-destructive-changes destructiveChanges/postDestructiveChanges.xml --manifest destructiveChanges/package.xml --wait 15
+          else
+            echo "---- No Post-Destructive changes to deploy ----"
+          fi
         displayName: Deploy Post-Destructive Changes in Salesforce
+        condition: eq( '${{ parameters.PR_MERGED }}', 'true')
+      
   - job: SFDeploy
     steps:
       - script: echo "SFBuild is running"
