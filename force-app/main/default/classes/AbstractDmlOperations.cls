@@ -31,4 +31,3 @@ public virtual class AbstractDmlOperations implements IDMLInsert, IDMLUpsert, ID
         List<Database.DeleteResult> results = Database.delete(new List<SObject>{record}, false);
     }
 }
-// testing for trigger 
