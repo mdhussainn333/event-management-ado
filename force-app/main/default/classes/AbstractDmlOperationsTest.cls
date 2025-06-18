@@ -120,15 +120,17 @@ public class AbstractDmlOperationsTest {
     static void testOverrideInsertRecords() {
         AbstractDmlOperations dmlOps = new AbstractDmlOperations();
         
+        // Prepare test data
         List<Account> accounts = new List<Account>{
             new Account(Name = 'Test Account 7'),
             new Account(Name = 'Test Account 8')
         };
-
+        // Call the method
         Test.startTest();
         dmlOps.insertRecords(accounts);
         Test.stopTest();
 
+        // Verify the records were inserted
         List<Account> insertedAccounts = [SELECT Id, Name FROM Account WHERE Name IN ('Test Account 7', 'Test Account 8')];
         System.assertEquals(2, insertedAccounts.size(), 'Two accounts should have been inserted');
     }
