@@ -1,24 +1,24 @@
-trigger: # Equivalent to 'trigger: - main' in YAML
-  branches:
-    include:
-     - feature/*
-  paths:
-    include:
-      - force-app/*
+# trigger: # Equivalent to 'trigger: - main' in YAML
+#   branches:
+#     include:
+#      - feature/*
+#   paths:
+#     include:
+#       - force-app/*
+#       - azure-pipelines.yml
 
-# pull request trigger
-pr:
-  branches:
-    include:
-      - force-app/*
-  paths:
-    include:
-      - force-app/*
+
+# # pull request trigger
+# pr:
+#   branches:
+#     include:
+#       - force-app/*
+#   paths:
+#     include:
+#       - force-app/*
 
 variables:
 - group: uat
-- name: TEST_CLASS_LEVEL
-  value: AccountTriggerTest
 
 pool:
   vmImage: ubuntu-latest
