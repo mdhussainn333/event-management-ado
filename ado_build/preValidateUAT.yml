@@ -1,0 +1,31 @@
+trigger: none
+
+# pull request trigger
+pr:
+  branches:
+    include:
+      - uat
+      - UAT
+  paths:
+    include:
+      - force-app/*
+
+variables:
+- group: uat
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: SFDeployAndValidate
+    jobs:
+      - job: SFDeployAndValidate
+      - template: ado_templates/template.yml
+        parameters:
+            SF_USER_NAME: $(SF_USER_NAME)
+            SF_ALIAS: $(SF_ALIAS)
+            SF_CLIENT_ID: $(SF_CLIENT_ID)
+            SF_INSTANCE_URL: $(SF_INSTANCE_URL)
+            SECURE_FILE_NAME: 'server-uat.key'
+            PR_MERGED: false
+      
