@@ -18,11 +18,11 @@ parameters:
   type: boolean
   default: false
 - name: BY_PASS_CODE_COVERAGE
-  type: boolean
-  default: false
+  type: string
+  default: no
 - name: BY_PASS_CODE_ANALYZER
-  type: boolean
-  default: false
+  type: string
+  default: no
 
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
           scriptSource: 'filePath'
           script: 'CODE_COVERAGE.py'
         displayName: Run CodeCoverage check
-        condition: eq( '${{ parameters.BY_PASS_CODE_COVERAGE }}', 'false')
+        condition: eq( '${{ parameters.BY_PASS_CODE_COVERAGE }}', 'yes')
       # Salesforce Code Analyzer
       - script: |
             mkdir scanner_reports
