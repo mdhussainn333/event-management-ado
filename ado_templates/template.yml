@@ -17,6 +17,13 @@ parameters:
 - name: PR_MERGED
   type: boolean
   default: false
+- name: BY_PASS_CODE_COVERAGE
+  type: string
+  default: no
+- name: BY_PASS_CODE_ANALYZER
+  type: string
+  default: no
+
 
 jobs:
   - job: SFValidate
@@ -43,6 +50,14 @@ jobs:
       - script: |
           sf apex run test --target-org $(SF_ALIAS) --test-level RunLocalTests --code-coverage --result-format human -d ./ --wait 10
         displayName: Run Local Tests
+      
+      # Run Python File to Get the CodeCoverage
+      - task: PythonScript@0
+        inputs:
+          scriptSource: 'filePath'
+          script: 'CODE_COVERAGE.py'
+        displayName: Run CodeCoverage check
+        condition: eq( '${{ parameters.BY_PASS_CODE_COVERAGE }}', 'yes')
       # Salesforce Code Analyzer
       - script: |
             mkdir scanner_reports
