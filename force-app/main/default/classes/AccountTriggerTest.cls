@@ -66,7 +66,7 @@ private class AccountTriggerTest {
         insert newAccount;
         Test.stopTest();
         
-        // Add assertions to verify the expected outcomes
+        // Add assertions
         System.assertNotEquals(null, newAccount.Id, 'New account ID should not be null');
     }
 }
