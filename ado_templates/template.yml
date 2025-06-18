@@ -47,8 +47,8 @@ jobs:
       # Run Python File to Get the CodeCoverage
       - task: PythonScript@0
         inputs:
-          scriptSource: 'inline'
-          script: 'CODECOVERAGE.py'
+          scriptSource: 'filePath'
+          script: 'CODE_COVERAGE.py'
         displayName: Run CodeCoverage check
       # Salesforce Code Analyzer
       - script: |

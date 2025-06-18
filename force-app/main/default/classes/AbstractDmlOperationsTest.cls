@@ -125,7 +125,7 @@ public class AbstractDmlOperationsTest {
             new Account(Name = 'Test Account 7'),
             new Account(Name = 'Test Account 8')
         };
-        // Call the method
+
         Test.startTest();
         dmlOps.insertRecords(accounts);
         Test.stopTest();
