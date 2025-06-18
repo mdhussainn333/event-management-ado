@@ -121,5 +121,4 @@ public with sharing class AccountTriggerHandler {
         }
         return lineItems;
     }
-}
-// Trigger to call the handler
+} 
