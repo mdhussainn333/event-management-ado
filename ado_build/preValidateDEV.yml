@@ -28,4 +28,6 @@ stages:
             SF_INSTANCE_URL: $(SF_INSTANCE_URL)
             SECURE_FILE_NAME: 'server-dev.key'
             PR_MERGED: false
+            BY_PASS_CODE_COVERAGE: $(BY_PASS_CODE_COVERAGE)
+            BY_PASS_CODE_ANALYZER: $(BY_PASS_CODE_ANALYZER)
       

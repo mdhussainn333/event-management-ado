@@ -120,7 +120,6 @@ public class AbstractDmlOperationsTest {
     static void testOverrideInsertRecords() {
         AbstractDmlOperations dmlOps = new AbstractDmlOperations();
         
-        // Prepare test data
         List<Account> accounts = new List<Account>{
             new Account(Name = 'Test Account 7'),
             new Account(Name = 'Test Account 8')

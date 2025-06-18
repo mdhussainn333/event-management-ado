@@ -17,6 +17,13 @@ parameters:
 - name: PR_MERGED
   type: boolean
   default: false
+- name: BY_PASS_CODE_COVERAGE
+  type: boolean
+  default: false
+- name: BY_PASS_CODE_ANALYZER
+  type: boolean
+  default: false
+
 
 jobs:
   - job: SFValidate
@@ -50,6 +57,7 @@ jobs:
           scriptSource: 'filePath'
           script: 'CODE_COVERAGE.py'
         displayName: Run CodeCoverage check
+        condition: eq( '${{ parameters.BY_PASS_CODE_COVERAGE }}', 'false')
       # Salesforce Code Analyzer
       - script: |
             mkdir scanner_reports
