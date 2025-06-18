@@ -130,7 +130,7 @@ public class AbstractDmlOperationsTest {
         dmlOps.insertRecords(accounts);
         Test.stopTest();
 
-        // Verify the records inserted
+        // Verify the records were inserted
         List<Account> insertedAccounts = [SELECT Id, Name FROM Account WHERE Name IN ('Test Account 7', 'Test Account 8')];
         System.assertEquals(2, insertedAccounts.size(), 'Two accounts should have been inserted');
     }
