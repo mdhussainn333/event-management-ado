@@ -27,7 +27,7 @@ jobs:
       - script: npm install -g @salesforce/cli
         displayName: Install Salesforce CLI
       - script: sf --version
-        displayName: Verify SF-CLI Installation
+        displayName: Verify SF-CLI Installation   
       - script: |
           echo 'y' | sf plugins install sfdx-git-delta
           sf plugins install @salesforce/sfdx-scanner
