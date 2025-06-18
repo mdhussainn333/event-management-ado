@@ -9,8 +9,6 @@ public virtual class AbstractDmlOperations implements IDMLInsert, IDMLUpsert, ID
     public virtual void upsertRecords(List<SObject> records, Schema.SObjectField externalIdField) {
         List<Database.UpsertResult> results = Database.upsert(records, externalIdField, false);
     }
-    // Some more methods
-    // Some more methods
     public virtual void upsertRecords(SObject record, Schema.SObjectField externalIdField) {
         List<Database.UpsertResult> results = Database.upsert(new List<SObject>{record}, externalIdField, false);
     }
@@ -32,5 +30,4 @@ public virtual class AbstractDmlOperations implements IDMLInsert, IDMLUpsert, ID
     public virtual void deleteRecords(SObject record) {
         List<Database.DeleteResult> results = Database.delete(new List<SObject>{record}, false);
     }
-    // Some more methods
 }
